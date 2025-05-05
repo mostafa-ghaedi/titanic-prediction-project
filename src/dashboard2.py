@@ -119,5 +119,3 @@ if not filtered_df.empty:
     st.bar_chart(survival_by_class.set_index("Passenger Class")["Survival Rate"])
 else:
     st.write("No data available for this filter combination.")
-
-# Run with: streamlit run dashboard.py

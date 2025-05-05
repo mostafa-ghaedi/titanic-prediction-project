@@ -25,7 +25,7 @@ scaler = StandardScaler()
 features_scaled = scaler.fit_transform(features)
 features_scaled_df = pd.DataFrame(features_scaled, columns=features.columns)
 
-# Split data and train model (original)
+# Split data and train model
 X_train, X_test, y_train, y_test = train_test_split(features_scaled, target, test_size=0.2, random_state=42)
 model = LinearRegression()
 model.fit(X_train, y_train)
