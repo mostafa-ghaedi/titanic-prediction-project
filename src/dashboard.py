@@ -1,3 +1,4 @@
+# dashboard.py
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -5,6 +6,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score, accuracy_score
 import streamlit as st
+import matplotlib.pyplot as plt
 
 # Load and preprocess data
 @st.cache_data
@@ -101,10 +103,22 @@ st.subheader("⚖️ Feature Importance (Coefficients)")
 coef_df = pd.DataFrame({"Feature": features.columns, "Coefficient": model.coef_})
 st.bar_chart(coef_df.set_index("Feature")["Coefficient"])
 
-# Correlation matrix as a table (since heatmap is not directly supported by Streamlit)
-st.subheader("🔗 Correlation Matrix")
+# Correlation heatmap using matplotlib
+st.subheader("🔗 Correlation Heatmap")
+fig, ax = plt.subplots(figsize=(10, 8))
 corr_matrix = features_scaled_df.corr()
-st.dataframe(corr_matrix.style.format("{:.2f}").background_gradient(cmap="coolwarm", vmin=-1, vmax=1))
+im = ax.imshow(corr_matrix, cmap="coolwarm", vmin=-1, vmax=1)
+fig.colorbar(im)
+ax.set_xticks(np.arange(len(corr_matrix.columns)))
+ax.set_yticks(np.arange(len(corr_matrix.columns)))
+ax.set_xticklabels(corr_matrix.columns, rotation=45, ha="right")
+ax.set_yticklabels(corr_matrix.columns)
+for i in range(len(corr_matrix)):
+    for j in range(len(corr_matrix)):
+        ax.text(j, i, f"{corr_matrix.iloc[i, j]:.2f}", ha="center", va="center", color="black")
+ax.set_title("Correlation Heatmap")
+plt.tight_layout()
+st.pyplot(fig)
 
 # Summary statistics
 st.subheader("📝 Summary Statistics")
@@ -119,3 +133,15 @@ if not filtered_df.empty:
     st.bar_chart(survival_by_class.set_index("Passenger Class")["Survival Rate"])
 else:
     st.write("No data available for this filter combination.")
+
+# Survival rate by gender
+st.subheader("📉 Survival Rate by Gender")
+if not filtered_df.empty:
+    survival_by_gender = filtered_df.groupby("Sex")["Survived"].mean().reset_index()
+    survival_by_gender["Sex"] = survival_by_gender["Sex"].map({0: "Male", 1: "Female"})
+    survival_by_gender.columns = ["Gender", "Survival Rate"]
+    st.bar_chart(survival_by_gender.set_index("Gender")["Survival Rate"])
+else:
+    st.write("No data available for this filter combination.")
+
+# Run with: streamlit run dashboard.py
